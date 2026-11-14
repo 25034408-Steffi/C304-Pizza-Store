@@ -1,6 +1,18 @@
-import React from 'react';
+import React, {useState} from 'react';
 import ReactDOM from 'react-dom/client';
 import './styles.css';
+import pizzaData from './data/pizzaData';
+
+const shopOpen = isShopOpen()
+
+function isShopOpen() {
+    const currentHour = new Date().getHours(); 
+    if (currentHour >= 10 && currentHour < 22) {
+        return true
+    }
+    return false
+}
+
 
 function App() {
     return (
@@ -13,27 +25,24 @@ function App() {
 }
 
 function Menu() {
+    const [searchText, setSearchText] = useState("");
+    const displayPizzas = pizzaData.filter(pizza => pizza.name.toLowerCase().includes(searchText.toLowerCase()));
+
     return (
         <div className="menu">
             <h2>Our Menu</h2>
-            <Pizza 
-                picture={{
-                    src: './pizza_images/spinaci.jpg',
-                    alt:'spinaci pizza'
-                }}
-                name='Spinach Pizza'
-                desc='Tomato, mozarella, spinach, and ricotta cheese'
-                price={10}
-            />
-            <Pizza 
-                picture={{
-                    src:'./pizza_images/salamino.jpg',
-                    alt:'salamino pizza'
-                }}
-                name='Salamino Pizza'
-                desc='insert desc'
-                price={12}
-            />
+            { isShopOpen && <p>Authentic Italian cuisine, all from our stone oven</p> }
+
+            <SearchBar searchText={searchText}
+                setSearchText={setSearchText}/>
+
+            <div className="pizzas">
+                {displayPizzas.map((pizza, index) => (
+                    <Pizza key={index} pizza={pizza} />
+                ))
+            }
+            </div>
+        
         </div>
     );
 }
@@ -45,31 +54,52 @@ function Header() {
             fontSize: 48,
             textTransform: 'uppercase' 
         }}>
-            Pizza Store
+            Totally Pizzas
         </h1>
     );
 }
 
-function Pizza( { picture, name, desc, price } ) {
+function Pizza( { pizza } ) {
     return (
-        <>
-            <img src={picture.src} alt={picture.alt}></img>
-            <h3>{name}</h3>
-            <p>{desc}</p>
-            <p>{price}</p>
-        </>
+        <div className={pizza.soldOut ? "pizza sold-out" : "pizza"}>
+            <img src={pizza.picture.src} alt={pizza.picture.alt}></img>
+            <h3>{pizza.name}</h3>
+            <p>{pizza.ingredients}</p>
+            <p>{pizza.price}</p>
+        </div>
     ) 
 }
 
 function Footer() {
-    const currentHour = new Date().getHours(); 
-    if (currentHour >= 10 && currentHour < 22) {
-        return <p className="footer">We're currently open</p>
-    } else {
-        return <p className="footer">Sorry we're closed</p>
+    return (
+        shopOpen ? (
+            <Order />
+        ) : (
+            <p className="footer">Sorry we're closed</p>
+        )
+    )
 
-    }
+}
 
+function Order() {
+    return (
+        <div className="order">
+            <p className="footer">We're currently open</p>
+            <button className="btn">Order</button>
+        </div>
+    )
+}
+
+
+function SearchBar({searchText, setSearchText}) {
+    return(
+    <div className='searchBar'>
+        <input type="text" 
+            placeholder='search pizzas...' 
+            value={searchText}
+            onChange={(event) => {setSearchText(event.target.value)}}/>
+    </div>
+    )
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -78,5 +108,3 @@ root.render(
     <App />
   </React.StrictMode>
 );
-
-
